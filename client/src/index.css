@@ -1,0 +1,89 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Lora:wght@400;500;600&family=Source+Serif+4:wght@400;500;600&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-cream font-serif-body text-dark-brown;
+  }
+  
+  h1, h2, h3 {
+    @apply font-serif-title font-bold;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply px-6 py-3 bg-warm-gold text-dark-brown font-medium rounded-none hover:bg-opacity-90 transition-all disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .btn-secondary {
+    @apply px-6 py-3 bg-warm-gray text-dark-brown font-medium rounded-none hover:bg-opacity-90 transition-all;
+  }
+
+  .page-container {
+    @apply min-h-screen bg-cream flex items-center justify-center;
+  }
+
+  .content-wrapper {
+    @apply w-full max-w-2xl mx-auto px-8 py-12;
+  }
+
+  .textarea-base {
+    @apply w-full p-6 bg-warm-gray text-dark-brown font-serif-body text-base leading-relaxed border border-border-beige focus:outline-none focus:ring-2 focus:ring-warm-gold focus:border-transparent resize-none;
+  }
+}
+
+/* 检测动画 */
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.spin-ring {
+  animation: spin 3s linear infinite;
+}
+
+.fade-in {
+  animation: fadeIn 0.6s ease-in-out forwards;
+}
+
+.fade-in-delay-1 {
+  animation: fadeIn 0.6s ease-in-out 0.5s forwards;
+  opacity: 0;
+}
+
+.fade-in-delay-2 {
+  animation: fadeIn 0.6s ease-in-out 1.5s forwards;
+  opacity: 0;
+}
+
+.fade-in-delay-3 {
+  animation: fadeIn 0.6s ease-in-out 2.5s forwards;
+  opacity: 0;
+}
+
+.big-number-fade {
+  animation: fadeIn 1s ease-in-out;
+  font-family: 'Playfair Display', serif;
+}
+
+.bar-chart-fade {
+  animation: fadeIn 1s ease-in-out 0.5s forwards;
+  opacity: 0;
+}
