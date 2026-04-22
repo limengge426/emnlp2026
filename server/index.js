@@ -12,7 +12,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 initDB();
 
 const app = express();
-const PORT = process.env.PORT || 3001;
+const PORT = 3001;
 const ADMIN_KEY = 'research-admin-2025';
 
 // 中间件
