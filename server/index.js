@@ -12,7 +12,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 initDB();
 
 const app = express();
-const PORT = 3001;
+const PORT = process.env.PORT || 3001;
 const ADMIN_KEY = 'research-admin-2025';
 
 // 中间件
@@ -229,7 +229,7 @@ app.get('/api/admin/data', (req, res) => {
 // 管理员：导出 CSV
 app.get('/api/admin/export', (req, res) => {
   try {
-    const adminKey = req.headers['x-admin-key'];
+    const adminKey = req.headers['x-admin-key'] || req.query.key;
     if (adminKey !== ADMIN_KEY) {
       return res.status(403).json({ error: '权限不足' });
     }
