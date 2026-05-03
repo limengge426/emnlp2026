@@ -17,7 +17,7 @@ export default function Writing2Page({ initialText, onSubmit }) {
   };
 
   const wordCount = countWords(text);
-  const canSubmit = wordCount >= 300;
+  const canSubmit = wordCount >= 400;
 
   const handleKeyDown = (e) => {
     setKeystrokeLog(prev => [...prev, {
@@ -73,17 +73,17 @@ export default function Writing2Page({ initialText, onSubmit }) {
             value={text}
             onChange={(e) => setText(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder="那天下午……"
+            placeholder="请输入文字……"
             className="textarea-base"
             style={{ minHeight: '60vh' }}
           />
 
           <div className="mt-6 flex justify-between items-center">
             <div className="text-med-brown text-sm font-serif-body">
-              字数统计：<span className="font-semibold text-dark-brown">{wordCount}</span> / 300-500
-              {wordCount < 300 && (
+              字数统计：<span className="font-semibold text-dark-brown">{wordCount}</span> / 400-500
+              {wordCount < 400 && (
                 <div className="text-burnt-red text-xs mt-1">
-                  还需要 {300 - wordCount} 个字
+                  还需要 {400 - wordCount} 个字
                 </div>
               )}
             </div>

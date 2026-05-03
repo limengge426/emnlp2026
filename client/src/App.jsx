@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import ConsentPage from './pages/Consent';
+import PreSurveyPage from './pages/PreSurvey';
 import Writing1Page from './pages/Writing1';
 import Detecting1Page from './pages/Detecting1';
 import Result1Page from './pages/Result1';
@@ -31,6 +32,10 @@ export default function App() {
   const handleConsentSubmit = (id, groupData) => {
     setParticipantId(id);
     setGroup(groupData);
+    setState('PRE_SURVEY');
+  };
+
+  const handlePreSurveySubmit = () => {
     setState('WRITING_1');
   };
 
@@ -74,6 +79,13 @@ export default function App() {
         return <AdminPage />;
       case 'CONSENT':
         return <ConsentPage onSubmit={handleConsentSubmit} />;
+      case 'PRE_SURVEY':
+        return (
+          <PreSurveyPage
+            participantId={participantId}
+            onSubmit={handlePreSurveySubmit}
+          />
+        );
       case 'WRITING_1':
         return (
           <Writing1Page

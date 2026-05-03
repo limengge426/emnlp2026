@@ -87,7 +87,10 @@ export default function Writing1Page({ participantId, group, onSubmit }) {
             写作题目
           </h2>
           <p className="text-lg text-med-brown font-serif-body leading-relaxed">
-            请以"那天下午"为开头，写一篇 300–500 字的短篇小说。
+            伍尔夫在《到灯塔去》写过：“她想，这真奇怪，人若是孤独一人，便会依附于无生命的东西：树木、溪流、花朵；觉得它们表达了自我；觉得它们变成了自己；觉得它们了解自己，在某种意义上就是自己；便对这些东西产生了一种不合逻辑的柔情（她看着那长久而稳定的光亮），就像对自己一样。那情景升腾起来，她停下手中紧握的织针，注视着，注视着，那东西从心灵的底蕴上卷起，从生命的湖泊中升起，像迷雾，像去会情人的新娘。“
+          </p>
+          <p className="text-lg text-med-brown font-serif-body leading-relaxed">
+            你是否有过这样的瞬间？这段话让你想起什么、记起什么、感受到什么，都可以成为你的主题。请就此写一篇 400 到 500 字的散文。
           </p>
         </div>
 
@@ -97,17 +100,17 @@ export default function Writing1Page({ participantId, group, onSubmit }) {
             value={text}
             onChange={(e) => setText(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder="那天下午……"
+            placeholder="请输入文字……"
             className="textarea-base"
             style={{ minHeight: '60vh' }}
           />
 
           <div className="mt-6 flex justify-between items-center">
             <div className="text-med-brown text-sm font-serif-body">
-              字数统计：<span className="font-semibold text-dark-brown">{wordCount}</span> / 300-500
-              {wordCount < 300 && (
+              字数统计：<span className="font-semibold text-dark-brown">{wordCount}</span> / 400-500
+              {wordCount < 400 && (
                 <div className="text-burnt-red text-xs mt-1">
-                  还需要 {300 - wordCount} 个字
+                  还需要 {400 - wordCount} 个字
                 </div>
               )}
             </div>

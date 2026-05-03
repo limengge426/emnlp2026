@@ -12,8 +12,12 @@ export default function QuestionnairePage({
 }) {
   const [formData, setFormData] = useState({
     q1_changes: '',
+    q_deleted_types: [],
     q2_aiMarkers: '',
+    q_detection_reaction: '',
     q3_restricted: 0,
+    q_abandoned_content: '',
+    q_authentic_draft: '',
     q4_dailyConcern: 0,
     q5_other: ''
   });
@@ -28,12 +32,28 @@ export default function QuestionnairePage({
       newErrors.q1_changes = '请至少输入 20 个字';
     }
 
+    if (formData.q_deleted_types.length === 0) {
+      newErrors.q_deleted_types = '至少选择一项';
+    }
+
     if (!formData.q2_aiMarkers.trim()) {
       newErrors.q2_aiMarkers = '请填写此项';
     }
 
+    if (!formData.q_detection_reaction) {
+      newErrors.q_detection_reaction = '请选择一个选项';
+    }
+
     if (formData.q3_restricted === 0) {
       newErrors.q3_restricted = '请选择一个选项';
+    }
+
+    if (!formData.q_abandoned_content.trim()) {
+      newErrors.q_abandoned_content = '请填写此项';
+    }
+
+    if (!formData.q_authentic_draft) {
+      newErrors.q_authentic_draft = '请选择一个选项';
     }
 
     if (formData.q4_dailyConcern === 0) {
@@ -42,6 +62,25 @@ export default function QuestionnairePage({
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
+  };
+
+  const handleCheckboxChange = (field, value) => {
+    setFormData(prev => {
+      const updated = prev[field].includes(value)
+        ? prev[field].filter(v => v !== value)
+        : [...prev[field], value];
+      return { ...prev, [field]: updated };
+    });
+    if (errors[field]) {
+      setErrors(prev => ({ ...prev, [field]: '' }));
+    }
+  };
+
+  const handleLikertChange = (field, value) => {
+    setFormData(prev => ({ ...prev, [field]: parseInt(value) }));
+    if (errors[field]) {
+      setErrors(prev => ({ ...prev, [field]: '' }));
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -99,13 +138,6 @@ export default function QuestionnairePage({
     }
   };
 
-  const handleLikertChange = (field, value) => {
-    setFormData(prev => ({ ...prev, [field]: parseInt(value) }));
-    if (errors[field]) {
-      setErrors(prev => ({ ...prev, [field]: '' }));
-    }
-  };
-
   return (
     <div className="page-container bg-cream">
       <div className="content-wrapper">
@@ -114,7 +146,7 @@ export default function QuestionnairePage({
         </h1>
 
         <form onSubmit={handleSubmit} className="max-w-2xl mx-auto">
-          {/* 问题 1 */}
+          {/* 问题 1: 原问题1 */}
           <div className="mb-8 p-6 bg-warm-gray border border-border-beige">
             <label className="block text-lg font-serif-title text-dark-brown mb-3">
               您在修改时主要做了哪些改动？
@@ -134,7 +166,30 @@ export default function QuestionnairePage({
             )}
           </div>
 
-          {/* 问题 2 */}
+          {/* 问题 A: 多选问题 - 删减的内容 */}
+          <div className="mb-8 p-6 bg-warm-gray border border-border-beige">
+            <label className="block text-lg font-serif-title text-dark-brown mb-4">
+              您在修改时，主要删减了什么类型的内容？<span className="text-med-brown text-sm">（至少选一项）</span>
+            </label>
+            <div className="space-y-3">
+              {['比喻或修辞', '情感性词语', '某些标点（如破折号、省略号）', '句式结构', '某些主观判断或观点', '具体细节', '没有删减内容', '其他'].map(option => (
+                <label key={option} className="flex items-center cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={formData.q_deleted_types.includes(option)}
+                    onChange={() => handleCheckboxChange('q_deleted_types', option)}
+                    className="w-4 h-4 mr-3"
+                  />
+                  <span className="text-dark-brown font-serif-body">{option}</span>
+                </label>
+              ))}
+            </div>
+            {errors.q_deleted_types && (
+              <p className="text-burnt-red text-sm mt-2">{errors.q_deleted_types}</p>
+            )}
+          </div>
+
+          {/* 问题 2: 原问题2 */}
           <div className="mb-8 p-6 bg-warm-gray border border-border-beige">
             <label className="block text-lg font-serif-title text-dark-brown mb-3">
               您觉得哪些写法会让文章"看起来像 AI 写的"？
@@ -154,7 +209,35 @@ export default function QuestionnairePage({
             )}
           </div>
 
-          {/* 问题 3 */}
+          {/* 问题 C: 单选问题 - 检测结果反应 */}
+          <div className="mb-8 p-6 bg-warm-gray border border-border-beige">
+            <label className="block text-lg font-serif-title text-dark-brown mb-4">
+              当您看到第一次检测结果时，您的第一反应是？
+            </label>
+            <div className="space-y-3">
+              {['感到意外', '觉得结果可能是准确的', '不太相信', '完全不相信'].map(option => (
+                <label key={option} className="flex items-center cursor-pointer">
+                  <input
+                    type="radio"
+                    name="q_detection_reaction"
+                    value={option}
+                    checked={formData.q_detection_reaction === option}
+                    onChange={(e) => {
+                      setFormData(prev => ({ ...prev, q_detection_reaction: e.target.value }));
+                      if (errors.q_detection_reaction) setErrors(prev => ({ ...prev, q_detection_reaction: '' }));
+                    }}
+                    className="w-4 h-4 mr-3"
+                  />
+                  <span className="text-dark-brown font-serif-body">{option}</span>
+                </label>
+              ))}
+            </div>
+            {errors.q_detection_reaction && (
+              <p className="text-burnt-red text-sm mt-2">{errors.q_detection_reaction}</p>
+            )}
+          </div>
+
+          {/* 问题 3: 原问题3 */}
           <div className="mb-8 p-6 bg-warm-gray border border-border-beige">
             <label className="block text-lg font-serif-title text-dark-brown mb-4">
               修改过程中，您是否感到受限或委屈？
@@ -183,7 +266,55 @@ export default function QuestionnairePage({
             )}
           </div>
 
-          {/* 问题 4 */}
+          {/* 问题 F: 开放题 - 被放弃的内容（现改为必填）*/}
+          <div className="mb-8 p-6 bg-warm-gray border border-border-beige">
+            <label className="block text-lg font-serif-title text-dark-brown mb-3">
+              在修改过程中，您有没有放弃一些原本想写的表达？如果有，那是什么？
+            </label>
+            <textarea
+              value={formData.q_abandoned_content}
+              onChange={(e) => {
+                setFormData(prev => ({ ...prev, q_abandoned_content: e.target.value }));
+                if (errors.q_abandoned_content) setErrors(prev => ({ ...prev, q_abandoned_content: '' }));
+              }}
+              className="w-full p-4 bg-white border border-border-beige text-dark-brown font-serif-body focus:outline-none focus:ring-2 focus:ring-warm-gold resize-none"
+              rows="3"
+              placeholder="请描述您放弃了什么，以及为什么放弃……"
+            />
+            {errors.q_abandoned_content && (
+              <p className="text-burnt-red text-sm mt-2">{errors.q_abandoned_content}</p>
+            )}
+          </div>
+
+          {/* 问题 G: 单选问题 - 哪一稿更像自己 */}
+          <div className="mb-8 p-6 bg-warm-gray border border-border-beige">
+            <label className="block text-lg font-serif-title text-dark-brown mb-4">
+              修改完成后，您觉得哪一稿更像"你自己"？
+            </label>
+            <div className="space-y-3">
+              {['第一稿更像我', '两稿差不多', '第二稿更像我'].map(option => (
+                <label key={option} className="flex items-center cursor-pointer">
+                  <input
+                    type="radio"
+                    name="q_authentic_draft"
+                    value={option}
+                    checked={formData.q_authentic_draft === option}
+                    onChange={(e) => {
+                      setFormData(prev => ({ ...prev, q_authentic_draft: e.target.value }));
+                      if (errors.q_authentic_draft) setErrors(prev => ({ ...prev, q_authentic_draft: '' }));
+                    }}
+                    className="w-4 h-4 mr-3"
+                  />
+                  <span className="text-dark-brown font-serif-body">{option}</span>
+                </label>
+              ))}
+            </div>
+            {errors.q_authentic_draft && (
+              <p className="text-burnt-red text-sm mt-2">{errors.q_authentic_draft}</p>
+            )}
+          </div>
+
+          {/* 问题 4: 原问题4 */}
           <div className="mb-8 p-6 bg-warm-gray border border-border-beige">
             <label className="block text-lg font-serif-title text-dark-brown mb-4">
               在日常写作中，您是否也会有类似的顾虑（担心写作风格被认为像 AI）？
@@ -212,7 +343,7 @@ export default function QuestionnairePage({
             )}
           </div>
 
-          {/* 问题 5 */}
+          {/* 问题 5: 原问题5 */}
           <div className="mb-8 p-6 bg-warm-gray border border-border-beige">
             <label className="block text-lg font-serif-title text-dark-brown mb-3">
               其他想法或补充<span className="text-med-brown text-sm">（选填）</span>

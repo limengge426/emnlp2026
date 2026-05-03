@@ -11,13 +11,19 @@ const dbPath = process.env.NODE_ENV === 'production'
 export const initDB = () => {
   fs.mkdirSync(path.dirname(dbPath), { recursive: true });
   const db = new Database(dbPath);
-  
+
   // 创建表
   db.exec(`
     CREATE TABLE IF NOT EXISTS participants (
       id TEXT PRIMARY KEY,
       group_name TEXT,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+
+      -- Pre-Survey
+      writing_frequency TEXT,
+      ai_tool_usage TEXT,
+      ai_anxiety_baseline INTEGER,
+      ai_detector_familiarity TEXT,
 
       -- 第一稿
       draft1_text TEXT,
@@ -39,8 +45,12 @@ export const initDB = () => {
 
       -- 问卷
       q1_changes TEXT,
+      q_deleted_types TEXT,
       q2_ai_markers TEXT,
+      q_detection_reaction TEXT,
       q3_restricted INTEGER,
+      q_abandoned_content TEXT,
+      q_authentic_draft TEXT,
       q4_daily_concern INTEGER,
       q5_other TEXT,
       questionnaire_submit_time DATETIME

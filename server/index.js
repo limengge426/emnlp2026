@@ -48,13 +48,69 @@ app.get('/api/participant/:id', (req, res) => {
   try {
     const participants = loadParticipants();
     const { id } = req.params;
-    
+
     if (!participants[id]) {
       return res.status(404).json({ error: '被试编号不存在' });
     }
-    
+
     const group = participants[id];
     res.json({ participantId: id, group });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// 提交pre-survey
+app.post('/api/submit/presurvey', (req, res) => {
+  try {
+    const {
+      participantId,
+      writing_frequency,
+      ai_tool_usage,
+      ai_anxiety_baseline,
+      ai_detector_familiarity
+    } = req.body;
+
+    const db = getDB();
+
+    // 检查被试是否存在
+    const stmt = db.prepare('SELECT id FROM participants WHERE id = ?');
+    const existing = stmt.get(participantId);
+
+    if (existing) {
+      // 更新
+      const updateStmt = db.prepare(`
+        UPDATE participants
+        SET writing_frequency = ?,
+            ai_tool_usage = ?,
+            ai_anxiety_baseline = ?,
+            ai_detector_familiarity = ?
+        WHERE id = ?
+      `);
+      updateStmt.run(
+        writing_frequency,
+        ai_tool_usage,
+        ai_anxiety_baseline,
+        ai_detector_familiarity,
+        participantId
+      );
+    } else {
+      // 创建新记录
+      const insertStmt = db.prepare(`
+        INSERT INTO participants
+        (id, writing_frequency, ai_tool_usage, ai_anxiety_baseline, ai_detector_familiarity)
+        VALUES (?, ?, ?, ?, ?)
+      `);
+      insertStmt.run(
+        participantId,
+        writing_frequency,
+        ai_tool_usage,
+        ai_anxiety_baseline,
+        ai_detector_familiarity
+      );
+    }
+
+    res.json({ success: true, message: 'Pre-survey已保存' });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -174,34 +230,46 @@ app.post('/api/submit/questionnaire', (req, res) => {
     const {
       participantId,
       q1_changes,
+      q_deleted_types,
       q2_aiMarkers,
+      q_detection_reaction,
       q3_restricted,
+      q_abandoned_content,
+      q_authentic_draft,
       q4_dailyConcern,
       q5_other
     } = req.body;
 
     const db = getDB();
-    
+
     const updateStmt = db.prepare(`
-      UPDATE participants 
+      UPDATE participants
       SET q1_changes = ?,
+          q_deleted_types = ?,
           q2_ai_markers = ?,
+          q_detection_reaction = ?,
           q3_restricted = ?,
+          q_abandoned_content = ?,
+          q_authentic_draft = ?,
           q4_daily_concern = ?,
           q5_other = ?,
           questionnaire_submit_time = CURRENT_TIMESTAMP
       WHERE id = ?
     `);
-    
+
     updateStmt.run(
       q1_changes,
+      JSON.stringify(q_deleted_types),
       q2_aiMarkers,
+      q_detection_reaction,
       q3_restricted,
+      q_abandoned_content,
+      q_authentic_draft,
       q4_dailyConcern,
       q5_other || '',
       participantId
     );
-    
+
     res.json({ success: true, message: '问卷已提交' });
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -243,6 +311,10 @@ app.get('/api/admin/export', (req, res) => {
       'participantId',
       'group',
       'createdAt',
+      'writing_frequency',
+      'ai_tool_usage',
+      'ai_anxiety_baseline',
+      'ai_detector_familiarity',
       'draft1WordCount',
       'draft1StartTime',
       'draft1SubmitTime',
@@ -254,8 +326,12 @@ app.get('/api/admin/export', (req, res) => {
       'draft2SubmitTime',
       'draft2Text',
       'q1_changes',
+      'q_deleted_types',
       'q2_aiMarkers',
+      'q_detection_reaction',
       'q3_restricted',
+      'q_abandoned_content',
+      'q_authentic_draft',
       'q4_dailyConcern',
       'q5_other',
       'questionnaireSubmitTime'
@@ -265,6 +341,10 @@ app.get('/api/admin/export', (req, res) => {
       row.id,
       row.group_name,
       row.created_at,
+      row.writing_frequency || '',
+      row.ai_tool_usage || '',
+      row.ai_anxiety_baseline || '',
+      row.ai_detector_familiarity || '',
       row.draft1_word_count || '',
       row.draft1_start_time || '',
       row.draft1_submit_time || '',
@@ -276,8 +356,12 @@ app.get('/api/admin/export', (req, res) => {
       row.draft2_submit_time || '',
       `"${(row.draft2_text || '').replace(/"/g, '""')}"`,
       `"${(row.q1_changes || '').replace(/"/g, '""')}"`,
+      row.q_deleted_types || '',
       `"${(row.q2_ai_markers || '').replace(/"/g, '""')}"`,
+      row.q_detection_reaction || '',
       row.q3_restricted || '',
+      `"${(row.q_abandoned_content || '').replace(/"/g, '""')}"`,
+      row.q_authentic_draft || '',
       row.q4_daily_concern || '',
       `"${(row.q5_other || '').replace(/"/g, '""')}"`,
       row.questionnaire_submit_time || ''
