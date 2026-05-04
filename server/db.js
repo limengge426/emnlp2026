@@ -10,6 +10,12 @@ const dbPath = process.env.NODE_ENV === 'production'
 
 export const initDB = () => {
   fs.mkdirSync(path.dirname(dbPath), { recursive: true });
+
+  // 删除旧的数据库文件以重新初始化schema
+  if (fs.existsSync(dbPath)) {
+    fs.unlinkSync(dbPath);
+  }
+
   const db = new Database(dbPath);
 
   // 创建表
