@@ -65,10 +65,16 @@ app.post('/api/submit/presurvey', (req, res) => {
   try {
     const {
       participantId,
-      writing_frequency,
-      ai_tool_usage,
-      ai_anxiety_baseline,
-      ai_detector_familiarity
+      pre_age,
+      pre_gender,
+      pre_native_chinese,
+      pre_writing_frequency,
+      pre_writing_focus,
+      pre_ai_tool_usage,
+      pre_reader_concern,
+      pre_misjudgment_distress,
+      pre_detector_familiarity,
+      pre_predicted_ai_score
     } = req.body;
 
     const db = getDB();
@@ -81,32 +87,50 @@ app.post('/api/submit/presurvey', (req, res) => {
       // 更新
       const updateStmt = db.prepare(`
         UPDATE participants
-        SET writing_frequency = ?,
-            ai_tool_usage = ?,
-            ai_anxiety_baseline = ?,
-            ai_detector_familiarity = ?
+        SET pre_age = ?,
+            pre_gender = ?,
+            pre_native_chinese = ?,
+            pre_writing_frequency = ?,
+            pre_writing_focus = ?,
+            pre_ai_tool_usage = ?,
+            pre_reader_concern = ?,
+            pre_misjudgment_distress = ?,
+            pre_detector_familiarity = ?,
+            pre_predicted_ai_score = ?
         WHERE id = ?
       `);
       updateStmt.run(
-        writing_frequency,
-        ai_tool_usage,
-        ai_anxiety_baseline,
-        ai_detector_familiarity,
+        pre_age,
+        pre_gender,
+        pre_native_chinese,
+        pre_writing_frequency,
+        pre_writing_focus,
+        pre_ai_tool_usage,
+        pre_reader_concern,
+        pre_misjudgment_distress,
+        pre_detector_familiarity,
+        pre_predicted_ai_score,
         participantId
       );
     } else {
       // 创建新记录
       const insertStmt = db.prepare(`
         INSERT INTO participants
-        (id, writing_frequency, ai_tool_usage, ai_anxiety_baseline, ai_detector_familiarity)
-        VALUES (?, ?, ?, ?, ?)
+        (id, pre_age, pre_gender, pre_native_chinese, pre_writing_frequency, pre_writing_focus, pre_ai_tool_usage, pre_reader_concern, pre_misjudgment_distress, pre_detector_familiarity, pre_predicted_ai_score)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `);
       insertStmt.run(
         participantId,
-        writing_frequency,
-        ai_tool_usage,
-        ai_anxiety_baseline,
-        ai_detector_familiarity
+        pre_age,
+        pre_gender,
+        pre_native_chinese,
+        pre_writing_frequency,
+        pre_writing_focus,
+        pre_ai_tool_usage,
+        pre_reader_concern,
+        pre_misjudgment_distress,
+        pre_detector_familiarity,
+        pre_predicted_ai_score
       );
     }
 
@@ -229,44 +253,75 @@ app.post('/api/submit/questionnaire', (req, res) => {
   try {
     const {
       participantId,
+      group,
       q1_changes,
-      q_deleted_types,
-      q2_aiMarkers,
-      q_detection_reaction,
-      q3_restricted,
-      q_abandoned_content,
-      q_authentic_draft,
-      q4_dailyConcern,
-      q5_other
+      q2_abandoned,
+      q3_ai_markers,
+      q4_deleted_types,
+      q5_detection_reaction,
+      q5_prompt_interpretation,
+      q6_restricted,
+      q6_restriction_source,
+      q7_revision_goal,
+      q8_daily_concern,
+      q9_authentic_draft,
+      q10_perceived_purpose,
+      q11_other
     } = req.body;
+
+    // 按组别校验必填项
+    const missing = [];
+    if (!q1_changes || q1_changes.trim().length < 20) missing.push('q1_changes');
+    if (!q2_abandoned || q2_abandoned.trim().length < 10) missing.push('q2_abandoned');
+    if (!q3_ai_markers || q3_ai_markers.trim().length < 10) missing.push('q3_ai_markers');
+    if (!q4_deleted_types || q4_deleted_types.length === 0) missing.push('q4_deleted_types');
+    if (group === 'experimental' && !q5_detection_reaction) missing.push('q5_detection_reaction');
+    if (group === 'control' && (!q5_prompt_interpretation || q5_prompt_interpretation.trim().length < 10)) missing.push('q5_prompt_interpretation');
+    if (!q6_restricted) missing.push('q6_restricted');
+    if (!q7_revision_goal) missing.push('q7_revision_goal');
+    if (!q8_daily_concern) missing.push('q8_daily_concern');
+    if (!q9_authentic_draft) missing.push('q9_authentic_draft');
+    if (!q10_perceived_purpose || q10_perceived_purpose.trim().length < 10) missing.push('q10_perceived_purpose');
+
+    if (missing.length > 0) {
+      return res.status(400).json({ error: '必填项未填写', fields: missing });
+    }
 
     const db = getDB();
 
     const updateStmt = db.prepare(`
       UPDATE participants
       SET q1_changes = ?,
-          q_deleted_types = ?,
-          q2_ai_markers = ?,
-          q_detection_reaction = ?,
-          q3_restricted = ?,
-          q_abandoned_content = ?,
-          q_authentic_draft = ?,
-          q4_daily_concern = ?,
-          q5_other = ?,
+          q2_abandoned = ?,
+          q3_ai_markers = ?,
+          q4_deleted_types = ?,
+          q5_detection_reaction = ?,
+          q5_prompt_interpretation = ?,
+          q6_restricted = ?,
+          q6_restriction_source = ?,
+          q7_revision_goal = ?,
+          q8_daily_concern = ?,
+          q9_authentic_draft = ?,
+          q10_perceived_purpose = ?,
+          q11_other = ?,
           questionnaire_submit_time = CURRENT_TIMESTAMP
       WHERE id = ?
     `);
 
     updateStmt.run(
       q1_changes,
-      JSON.stringify(q_deleted_types),
-      q2_aiMarkers,
-      q_detection_reaction,
-      q3_restricted,
-      q_abandoned_content,
-      q_authentic_draft,
-      q4_dailyConcern,
-      q5_other || '',
+      q2_abandoned,
+      q3_ai_markers,
+      JSON.stringify(q4_deleted_types),
+      group === 'experimental' ? q5_detection_reaction : null,
+      group === 'control' ? q5_prompt_interpretation : null,
+      q6_restricted,
+      group === 'control' ? (q6_restriction_source || null) : null,
+      q7_revision_goal,
+      q8_daily_concern,
+      q9_authentic_draft,
+      q10_perceived_purpose,
+      q11_other || null,
       participantId
     );
 
@@ -308,43 +363,59 @@ app.get('/api/admin/export', (req, res) => {
     
     // 构建 CSV
     const headers = [
-      'participantId',
-      'group',
-      'createdAt',
-      'writing_frequency',
-      'ai_tool_usage',
-      'ai_anxiety_baseline',
-      'ai_detector_familiarity',
-      'draft1WordCount',
-      'draft1StartTime',
-      'draft1SubmitTime',
-      'draft1Text',
-      'fakeAiScore1',
-      'fakeAiScore2',
-      'draft2WordCount',
-      'draft2StartTime',
-      'draft2SubmitTime',
-      'draft2Text',
+      'id',
+      'group_name',
+      'created_at',
+      'pre_age',
+      'pre_gender',
+      'pre_native_chinese',
+      'pre_writing_frequency',
+      'pre_writing_focus',
+      'pre_ai_tool_usage',
+      'pre_reader_concern',
+      'pre_misjudgment_distress',
+      'pre_detector_familiarity',
+      'pre_predicted_ai_score',
+      'draft1_word_count',
+      'draft1_start_time',
+      'draft1_submit_time',
+      'draft1_text',
+      'fake_ai_score1',
+      'fake_ai_score2',
+      'draft2_word_count',
+      'draft2_start_time',
+      'draft2_submit_time',
+      'draft2_text',
       'q1_changes',
-      'q_deleted_types',
-      'q2_aiMarkers',
-      'q_detection_reaction',
-      'q3_restricted',
-      'q_abandoned_content',
-      'q_authentic_draft',
-      'q4_dailyConcern',
-      'q5_other',
-      'questionnaireSubmitTime'
+      'q2_abandoned',
+      'q3_ai_markers',
+      'q4_deleted_types',
+      'q5_detection_reaction',
+      'q5_prompt_interpretation',
+      'q6_restricted',
+      'q6_restriction_source',
+      'q7_revision_goal',
+      'q8_daily_concern',
+      'q9_authentic_draft',
+      'q10_perceived_purpose',
+      'q11_other',
+      'questionnaire_submit_time'
     ];
 
     const rows = data.map(row => [
       row.id,
       row.group_name,
       row.created_at,
-      row.writing_frequency || '',
-      row.ai_tool_usage || '',
-      row.ai_anxiety_baseline || '',
-      row.ai_detector_familiarity || '',
+      row.pre_age || '',
+      row.pre_gender || '',
+      row.pre_native_chinese || '',
+      row.pre_writing_frequency || '',
+      row.pre_writing_focus || '',
+      row.pre_ai_tool_usage || '',
+      row.pre_reader_concern || '',
+      row.pre_misjudgment_distress || '',
+      row.pre_detector_familiarity || '',
+      row.pre_predicted_ai_score || '',
       row.draft1_word_count || '',
       row.draft1_start_time || '',
       row.draft1_submit_time || '',
@@ -356,14 +427,18 @@ app.get('/api/admin/export', (req, res) => {
       row.draft2_submit_time || '',
       `"${(row.draft2_text || '').replace(/"/g, '""')}"`,
       `"${(row.q1_changes || '').replace(/"/g, '""')}"`,
-      row.q_deleted_types || '',
-      `"${(row.q2_ai_markers || '').replace(/"/g, '""')}"`,
-      row.q_detection_reaction || '',
-      row.q3_restricted || '',
-      `"${(row.q_abandoned_content || '').replace(/"/g, '""')}"`,
-      row.q_authentic_draft || '',
-      row.q4_daily_concern || '',
-      `"${(row.q5_other || '').replace(/"/g, '""')}"`,
+      `"${(row.q2_abandoned || '').replace(/"/g, '""')}"`,
+      `"${(row.q3_ai_markers || '').replace(/"/g, '""')}"`,
+      row.q4_deleted_types || '',
+      row.q5_detection_reaction || '',
+      `"${(row.q5_prompt_interpretation || '').replace(/"/g, '""')}"`,
+      row.q6_restricted || '',
+      `"${(row.q6_restriction_source || '').replace(/"/g, '""')}"`,
+      row.q7_revision_goal || '',
+      row.q8_daily_concern || '',
+      row.q9_authentic_draft || '',
+      `"${(row.q10_perceived_purpose || '').replace(/"/g, '""')}"`,
+      `"${(row.q11_other || '').replace(/"/g, '""')}"`,
       row.questionnaire_submit_time || ''
     ]);
 

@@ -26,10 +26,16 @@ export const initDB = () => {
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
 
       -- Pre-Survey
-      writing_frequency TEXT,
-      ai_tool_usage TEXT,
-      ai_anxiety_baseline INTEGER,
-      ai_detector_familiarity TEXT,
+      pre_age INTEGER,
+      pre_gender TEXT,
+      pre_native_chinese TEXT,
+      pre_writing_frequency TEXT,
+      pre_writing_focus TEXT,
+      pre_ai_tool_usage TEXT,
+      pre_reader_concern INTEGER,
+      pre_misjudgment_distress INTEGER,
+      pre_detector_familiarity TEXT,
+      pre_predicted_ai_score INTEGER,
 
       -- 第一稿
       draft1_text TEXT,
@@ -49,16 +55,25 @@ export const initDB = () => {
       draft2_submit_time DATETIME,
       keystroke_log2 TEXT,
 
-      -- 问卷
+      -- 问卷（共享字段）
       q1_changes TEXT,
-      q_deleted_types TEXT,
-      q2_ai_markers TEXT,
-      q_detection_reaction TEXT,
-      q3_restricted INTEGER,
-      q_abandoned_content TEXT,
-      q_authentic_draft TEXT,
-      q4_daily_concern INTEGER,
-      q5_other TEXT,
+      q2_abandoned TEXT,
+      q3_ai_markers TEXT,
+      q4_deleted_types TEXT,
+      q6_restricted INTEGER,
+      q7_revision_goal TEXT,
+      q8_daily_concern INTEGER,
+      q9_authentic_draft TEXT,
+      q10_perceived_purpose TEXT,
+      q11_other TEXT,
+
+      -- 问卷（实验组专用）
+      q5_detection_reaction TEXT,
+
+      -- 问卷（控制组专用）
+      q5_prompt_interpretation TEXT,
+      q6_restriction_source TEXT,
+
       questionnaire_submit_time DATETIME
     )
   `);
