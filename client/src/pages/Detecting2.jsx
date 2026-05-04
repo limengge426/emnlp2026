@@ -6,8 +6,8 @@ export default function Detecting2Page({ onComplete }) {
   useEffect(() => {
     const timings = [
       { delay: 500, message: '正在分析文本结构……' },
-      { delay: 1500, message: '正在比对语料特征……' },
-      { delay: 2500, message: '正在生成报告……' },
+      { delay: 5000, message: '正在比对语料特征……' },
+      { delay: 10000, message: '正在生成报告……' },
     ];
 
     const timeouts = timings.map(({ delay, message }) =>
@@ -17,10 +17,10 @@ export default function Detecting2Page({ onComplete }) {
     );
 
     const completeTimeout = setTimeout(() => {
-      // 生成随机 AI 分数 (15-22)
-      const score = Math.floor(Math.random() * 8) + 15;
+      // 生成随机 AI 分数 (15-35)
+      const score = Math.floor(Math.random() * 21) + 15;
       onComplete(score);
-    }, 6000);
+    }, 30000);
 
     return () => {
       timeouts.forEach(t => clearTimeout(t));
