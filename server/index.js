@@ -263,11 +263,22 @@ app.post('/api/submit/questionnaire', (req, res) => {
       q6_restricted,
       q6_restriction_source,
       q7_revision_goal,
+      q7b_motivation_accuracy,
+      q7c_motivation_stigma,
+      q7d_motivation_aesthetic,
+      q7e_motivation_compliance,
       q8_daily_concern,
       q9_authentic_draft,
       q10_perceived_purpose,
+      q10b_oddness,
+      q10c_score_doubt,
+      q10d_doubt_impact,
       q11_other
     } = req.body;
+
+    const isExp = group === 'experimental';
+    const isCtrl = group === 'control';
+    const inLikertRange = (v) => Number.isInteger(v) && v >= 1 && v <= 7;
 
     // 按组别校验必填项
     const missing = [];
@@ -275,13 +286,30 @@ app.post('/api/submit/questionnaire', (req, res) => {
     if (!q2_abandoned || q2_abandoned.trim().length < 10) missing.push('q2_abandoned');
     if (!q3_ai_markers || q3_ai_markers.trim().length < 10) missing.push('q3_ai_markers');
     if (!q4_deleted_types || q4_deleted_types.length === 0) missing.push('q4_deleted_types');
-    if (group === 'experimental' && !q5_detection_reaction) missing.push('q5_detection_reaction');
-    if (group === 'control' && (!q5_prompt_interpretation || q5_prompt_interpretation.trim().length < 10)) missing.push('q5_prompt_interpretation');
+    if (isExp && !q5_detection_reaction) missing.push('q5_detection_reaction');
+    if (isCtrl && (!q5_prompt_interpretation || q5_prompt_interpretation.trim().length < 10)) missing.push('q5_prompt_interpretation');
     if (!q6_restricted) missing.push('q6_restricted');
     if (!q7_revision_goal) missing.push('q7_revision_goal');
+
+    // 机制分离题：仅实验组必填，1-7
+    if (isExp && !inLikertRange(q7b_motivation_accuracy)) missing.push('q7b_motivation_accuracy');
+    if (isExp && !inLikertRange(q7c_motivation_stigma)) missing.push('q7c_motivation_stigma');
+    if (isExp && !inLikertRange(q7d_motivation_aesthetic)) missing.push('q7d_motivation_aesthetic');
+    if (isExp && !inLikertRange(q7e_motivation_compliance)) missing.push('q7e_motivation_compliance');
+
     if (!q8_daily_concern) missing.push('q8_daily_concern');
     if (!q9_authentic_draft) missing.push('q9_authentic_draft');
     if (!q10_perceived_purpose || q10_perceived_purpose.trim().length < 10) missing.push('q10_perceived_purpose');
+
+    // funneled debriefing
+    if (!q10b_oddness || q10b_oddness.trim().length < 10) missing.push('q10b_oddness');
+    if (isExp && !inLikertRange(q10c_score_doubt)) missing.push('q10c_score_doubt');
+    // q10d 仅在实验组且 q10c >= 4 时必填
+    if (isExp && inLikertRange(q10c_score_doubt) && q10c_score_doubt >= 4) {
+      if (!q10d_doubt_impact || q10d_doubt_impact.trim().length < 10) {
+        missing.push('q10d_doubt_impact');
+      }
+    }
 
     if (missing.length > 0) {
       return res.status(400).json({ error: '必填项未填写', fields: missing });
@@ -300,9 +328,16 @@ app.post('/api/submit/questionnaire', (req, res) => {
           q6_restricted = ?,
           q6_restriction_source = ?,
           q7_revision_goal = ?,
+          q7b_motivation_accuracy = ?,
+          q7c_motivation_stigma = ?,
+          q7d_motivation_aesthetic = ?,
+          q7e_motivation_compliance = ?,
           q8_daily_concern = ?,
           q9_authentic_draft = ?,
           q10_perceived_purpose = ?,
+          q10b_oddness = ?,
+          q10c_score_doubt = ?,
+          q10d_doubt_impact = ?,
           q11_other = ?,
           questionnaire_submit_time = CURRENT_TIMESTAMP
       WHERE id = ?
@@ -313,14 +348,21 @@ app.post('/api/submit/questionnaire', (req, res) => {
       q2_abandoned,
       q3_ai_markers,
       JSON.stringify(q4_deleted_types),
-      group === 'experimental' ? q5_detection_reaction : null,
-      group === 'control' ? q5_prompt_interpretation : null,
+      isExp ? q5_detection_reaction : null,
+      isCtrl ? q5_prompt_interpretation : null,
       q6_restricted,
-      group === 'control' ? (q6_restriction_source || null) : null,
+      isCtrl ? (q6_restriction_source || null) : null,
       q7_revision_goal,
+      isExp ? q7b_motivation_accuracy : null,
+      isExp ? q7c_motivation_stigma : null,
+      isExp ? q7d_motivation_aesthetic : null,
+      isExp ? q7e_motivation_compliance : null,
       q8_daily_concern,
       q9_authentic_draft,
       q10_perceived_purpose,
+      q10b_oddness,
+      isExp ? q10c_score_doubt : null,
+      isExp ? (q10d_doubt_impact || null) : null,
       q11_other || null,
       participantId
     );
@@ -395,9 +437,16 @@ app.get('/api/admin/export', (req, res) => {
       'q6_restricted',
       'q6_restriction_source',
       'q7_revision_goal',
+      'q7b_motivation_accuracy',
+      'q7c_motivation_stigma',
+      'q7d_motivation_aesthetic',
+      'q7e_motivation_compliance',
       'q8_daily_concern',
       'q9_authentic_draft',
       'q10_perceived_purpose',
+      'q10b_oddness',
+      'q10c_score_doubt',
+      'q10d_doubt_impact',
       'q11_other',
       'questionnaire_submit_time'
     ];
@@ -435,9 +484,16 @@ app.get('/api/admin/export', (req, res) => {
       row.q6_restricted || '',
       `"${(row.q6_restriction_source || '').replace(/"/g, '""')}"`,
       row.q7_revision_goal || '',
+      row.q7b_motivation_accuracy || '',
+      row.q7c_motivation_stigma || '',
+      row.q7d_motivation_aesthetic || '',
+      row.q7e_motivation_compliance || '',
       row.q8_daily_concern || '',
       row.q9_authentic_draft || '',
       `"${(row.q10_perceived_purpose || '').replace(/"/g, '""')}"`,
+      `"${(row.q10b_oddness || '').replace(/"/g, '""')}"`,
+      row.q10c_score_doubt || '',
+      `"${(row.q10d_doubt_impact || '').replace(/"/g, '""')}"`,
       `"${(row.q11_other || '').replace(/"/g, '""')}"`,
       row.questionnaire_submit_time || ''
     ]);

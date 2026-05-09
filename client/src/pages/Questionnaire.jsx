@@ -22,9 +22,16 @@ export default function QuestionnairePage({
     q6_restricted: 0,
     q6_restriction_source: '',
     q7_revision_goal: '',
+    q7b_motivation_accuracy: 0,
+    q7c_motivation_stigma: 0,
+    q7d_motivation_aesthetic: 0,
+    q7e_motivation_compliance: 0,
     q8_daily_concern: 0,
     q9_authentic_draft: '',
     q10_perceived_purpose: '',
+    q10b_oddness: '',
+    q10c_score_doubt: 0,
+    q10d_doubt_impact: '',
     q11_other: ''
   });
 
@@ -58,6 +65,12 @@ export default function QuestionnairePage({
     if (!formData.q7_revision_goal) {
       newErrors.q7_revision_goal = '请选择一个选项';
     }
+    if (isExperimental) {
+      if (formData.q7b_motivation_accuracy === 0) newErrors.q7b_motivation_accuracy = '请选择一个分值';
+      if (formData.q7c_motivation_stigma === 0) newErrors.q7c_motivation_stigma = '请选择一个分值';
+      if (formData.q7d_motivation_aesthetic === 0) newErrors.q7d_motivation_aesthetic = '请选择一个分值';
+      if (formData.q7e_motivation_compliance === 0) newErrors.q7e_motivation_compliance = '请选择一个分值';
+    }
     if (formData.q8_daily_concern === 0) {
       newErrors.q8_daily_concern = '请选择一个选项';
     }
@@ -66,6 +79,18 @@ export default function QuestionnairePage({
     }
     if (!formData.q10_perceived_purpose.trim() || formData.q10_perceived_purpose.trim().length < 10) {
       newErrors.q10_perceived_purpose = '请至少输入 10 个字';
+    }
+    if (!formData.q10b_oddness.trim() || formData.q10b_oddness.trim().length < 10) {
+      newErrors.q10b_oddness = '请至少输入 10 个字';
+    }
+    if (isExperimental) {
+      if (formData.q10c_score_doubt === 0) {
+        newErrors.q10c_score_doubt = '请选择一个分值';
+      } else if (formData.q10c_score_doubt >= 4) {
+        if (!formData.q10d_doubt_impact.trim() || formData.q10d_doubt_impact.trim().length < 10) {
+          newErrors.q10d_doubt_impact = '请至少输入 10 个字';
+        }
+      }
     }
 
     setErrors(newErrors);
@@ -124,14 +149,21 @@ export default function QuestionnairePage({
         }
       }
 
+      // 仅在实验组的"怀疑度"达到 4 分及以上时才发送 q10d，避免误传短文本
+      const payload = {
+        participantId,
+        group,
+        ...formData,
+        q10d_doubt_impact:
+          isExperimental && formData.q10c_score_doubt >= 4
+            ? formData.q10d_doubt_impact
+            : ''
+      };
+
       const response = await fetch('/api/submit/questionnaire', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          participantId,
-          group,
-          ...formData
-        })
+        body: JSON.stringify(payload)
       });
 
       if (!response.ok) {
@@ -372,6 +404,63 @@ export default function QuestionnairePage({
             )}
           </div>
 
+          {/* Q7b–e: 机制分离题（仅实验组） */}
+          {isExperimental && (
+            <div className="mb-8 p-6 bg-warm-gray border border-border-beige">
+              <label className="block text-lg font-serif-title text-dark-brown mb-2">
+                7.1 您选择修改文章，是因为以下哪些原因？
+              </label>
+              <p className="text-sm text-med-brown font-serif-body mb-5">
+                请对每一项打分：1 = 完全不是这个原因 / 7 = 非常强烈是这个原因。各项之间不互斥。
+              </p>
+
+              {[
+                {
+                  field: 'q7b_motivation_accuracy',
+                  text: 'a) 我担心 AI 检测器的判断是准确的，文章确实写得"像 AI"。'
+                },
+                {
+                  field: 'q7c_motivation_stigma',
+                  text: 'b) 我不希望自己的文字被别人或系统贴上"AI 味"的标签。'
+                },
+                {
+                  field: 'q7d_motivation_aesthetic',
+                  text: 'c) 我觉得"AI 味"本身就是一种不好的写作风格。'
+                },
+                {
+                  field: 'q7e_motivation_compliance',
+                  text: 'd) 我主要是为了配合任务要求，让分数降下去就好。'
+                }
+              ].map(({ field, text }) => (
+                <div key={field} className="mb-5">
+                  <p className="text-dark-brown font-serif-body mb-2">{text}</p>
+                  <div className="flex justify-between items-center">
+                    <span className="text-xs text-med-brown">完全不是</span>
+                    <div className="flex gap-2">
+                      {[1, 2, 3, 4, 5, 6, 7].map(value => (
+                        <label key={value} className="flex flex-col items-center cursor-pointer">
+                          <input
+                            type="radio"
+                            name={field}
+                            value={value}
+                            checked={formData[field] === value}
+                            onChange={() => handleLikertChange(field, value)}
+                            className="w-4 h-4"
+                          />
+                          <span className="text-xs text-dark-brown mt-1">{value}</span>
+                        </label>
+                      ))}
+                    </div>
+                    <span className="text-xs text-med-brown">非常强烈</span>
+                  </div>
+                  {errors[field] && (
+                    <p className="text-burnt-red text-sm mt-2">{errors[field]}</p>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+
           {/* Q8: 日常写作顾虑（Likert 1-7） */}
           <div className="mb-8 p-6 bg-warm-gray border border-border-beige">
             <label className="block text-lg font-serif-title text-dark-brown mb-4">
@@ -450,6 +539,79 @@ export default function QuestionnairePage({
               <p className="text-burnt-red text-sm mt-2">{errors.q10_perceived_purpose}</p>
             )}
           </div>
+
+          {/* Q10b: 实验体验中的"不对劲"（两组共用，开放） */}
+          <div className="mb-8 p-6 bg-warm-gray border border-border-beige">
+            <label className="block text-lg font-serif-title text-dark-brown mb-3">
+              10.1 在整个实验过程中，您有没有觉得哪里让您困惑、不自然，或者"不太对劲"？如果有，是什么？<span className="text-med-brown text-sm">（至少 10 字。如果没有，请直接写"没有觉得哪里不对劲"）</span>
+            </label>
+            <textarea
+              value={formData.q10b_oddness}
+              onChange={(e) => {
+                setFormData(prev => ({ ...prev, q10b_oddness: e.target.value }));
+                if (errors.q10b_oddness) setErrors(prev => ({ ...prev, q10b_oddness: '' }));
+              }}
+              className="w-full p-4 bg-white border border-border-beige text-dark-brown font-serif-body focus:outline-none focus:ring-2 focus:ring-warm-gold resize-none"
+              rows="3"
+              placeholder="请描述……"
+            />
+            {errors.q10b_oddness && (
+              <p className="text-burnt-red text-sm mt-2">{errors.q10b_oddness}</p>
+            )}
+          </div>
+
+          {/* Q10c: 怀疑度（仅实验组，Likert 1-7） */}
+          {isExperimental && (
+            <div className="mb-8 p-6 bg-warm-gray border border-border-beige">
+              <label className="block text-lg font-serif-title text-dark-brown mb-4">
+                10.2 您是否怀疑过 AI 检测分数的真实性？
+              </label>
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-med-brown">从未怀疑</span>
+                <div className="flex gap-2">
+                  {[1, 2, 3, 4, 5, 6, 7].map(value => (
+                    <label key={value} className="flex flex-col items-center cursor-pointer">
+                      <input
+                        type="radio"
+                        name="q10c_score_doubt"
+                        value={value}
+                        checked={formData.q10c_score_doubt === value}
+                        onChange={() => handleLikertChange('q10c_score_doubt', value)}
+                        className="w-4 h-4"
+                      />
+                      <span className="text-xs text-dark-brown mt-1">{value}</span>
+                    </label>
+                  ))}
+                </div>
+                <span className="text-sm text-med-brown">非常怀疑</span>
+              </div>
+              {errors.q10c_score_doubt && (
+                <p className="text-burnt-red text-sm mt-2">{errors.q10c_score_doubt}</p>
+              )}
+            </div>
+          )}
+
+          {/* Q10d: 怀疑的影响（仅实验组，且 q10c >= 4 时才显示） */}
+          {isExperimental && formData.q10c_score_doubt >= 4 && (
+            <div className="mb-8 p-6 bg-warm-gray border border-border-beige">
+              <label className="block text-lg font-serif-title text-dark-brown mb-3">
+                10.3 您刚才表示对分数有所怀疑。这种怀疑是否影响了您的修改方式？怎么影响的？<span className="text-med-brown text-sm">（至少 10 字）</span>
+              </label>
+              <textarea
+                value={formData.q10d_doubt_impact}
+                onChange={(e) => {
+                  setFormData(prev => ({ ...prev, q10d_doubt_impact: e.target.value }));
+                  if (errors.q10d_doubt_impact) setErrors(prev => ({ ...prev, q10d_doubt_impact: '' }));
+                }}
+                className="w-full p-4 bg-white border border-border-beige text-dark-brown font-serif-body focus:outline-none focus:ring-2 focus:ring-warm-gold resize-none"
+                rows="3"
+                placeholder="请描述……"
+              />
+              {errors.q10d_doubt_impact && (
+                <p className="text-burnt-red text-sm mt-2">{errors.q10d_doubt_impact}</p>
+              )}
+            </div>
+          )}
 
           {/* Q11: 其他（选填） */}
           <div className="mb-8 p-6 bg-warm-gray border border-border-beige">
