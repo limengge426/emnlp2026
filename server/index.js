@@ -290,7 +290,7 @@ app.post('/api/submit/questionnaire', (req, res) => {
     // 按组别校验必填项
     const missing = [];
     if (!q1_changes || q1_changes.trim().length < 20) missing.push('q1_changes');
-    if (!q2_abandoned || q2_abandoned.trim().length < 10) missing.push('q2_abandoned');
+    if (!q2_abandoned || q2_abandoned.trim().length === 0) missing.push('q2_abandoned');
     if (!q3_ai_markers || q3_ai_markers.trim().length < 10) missing.push('q3_ai_markers');
     if (!q4_deleted_types || q4_deleted_types.length === 0) missing.push('q4_deleted_types');
     if (isExp && !q5_detection_reaction) missing.push('q5_detection_reaction');

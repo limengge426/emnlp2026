@@ -44,8 +44,8 @@ export default function QuestionnairePage({
     if (!formData.q1_changes.trim() || formData.q1_changes.trim().length < 20) {
       newErrors.q1_changes = '请至少输入 20 个字';
     }
-    if (!formData.q2_abandoned.trim() || formData.q2_abandoned.trim().length < 10) {
-      newErrors.q2_abandoned = '请至少输入 10 个字';
+    if (!formData.q2_abandoned.trim()) {
+      newErrors.q2_abandoned = '请填写此项';
     }
     if (!formData.q3_ai_markers.trim() || formData.q3_ai_markers.trim().length < 10) {
       newErrors.q3_ai_markers = '请至少输入 10 个字';
@@ -222,7 +222,7 @@ export default function QuestionnairePage({
           {/* Q2: 放弃的表达 */}
           <div className="mb-8 p-6 bg-warm-gray border border-border-beige">
             <label className="block text-lg font-serif-title text-dark-brown mb-3">
-              2. 在修改过程中，您有没有放弃一些原本想写的表达？如果有，那是什么？如果没有，请填"没有"。<span className="text-med-brown text-sm">（至少 10 字）</span>
+              2. 在修改过程中，您有没有放弃一些原本想写的表达？如果有，那是什么？<span className="text-med-brown text-sm">（如果没有，可以直接写"没有"）</span>
             </label>
             <textarea
               value={formData.q2_abandoned}
