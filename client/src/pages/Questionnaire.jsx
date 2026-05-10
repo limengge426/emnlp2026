@@ -22,6 +22,7 @@ export default function QuestionnairePage({
     q6_restricted: 0,
     q6_restriction_source: '',
     q7_revision_goal: '',
+    q7_revision_goal_other: '',
     q7b_motivation_accuracy: 0,
     q7c_motivation_stigma: 0,
     q7d_motivation_aesthetic: 0,
@@ -64,6 +65,8 @@ export default function QuestionnairePage({
     }
     if (!formData.q7_revision_goal) {
       newErrors.q7_revision_goal = '请选择一个选项';
+    } else if (formData.q7_revision_goal === '其他' && !formData.q7_revision_goal_other.trim()) {
+      newErrors.q7_revision_goal_other = '请填写您的"其他"目标';
     }
     if (isExperimental) {
       if (formData.q7b_motivation_accuracy === 0) newErrors.q7b_motivation_accuracy = '请选择一个分值';
@@ -150,10 +153,13 @@ export default function QuestionnairePage({
       }
 
       // 仅在实验组的"怀疑度"达到 4 分及以上时才发送 q10d，避免误传短文本
+      // 仅在 q7 选了"其他"时才发送 q7_revision_goal_other
       const payload = {
         participantId,
         group,
         ...formData,
+        q7_revision_goal_other:
+          formData.q7_revision_goal === '其他' ? formData.q7_revision_goal_other : '',
         q10d_doubt_impact:
           isExperimental && formData.q10c_score_doubt >= 4
             ? formData.q10d_doubt_impact
@@ -401,6 +407,26 @@ export default function QuestionnairePage({
             </div>
             {errors.q7_revision_goal && (
               <p className="text-burnt-red text-sm mt-2">{errors.q7_revision_goal}</p>
+            )}
+            {formData.q7_revision_goal === '其他' && (
+              <div className="mt-4">
+                <label className="block text-sm font-serif-title text-dark-brown mb-2">
+                  请简要说明您的"其他"目标：
+                </label>
+                <textarea
+                  value={formData.q7_revision_goal_other}
+                  onChange={(e) => {
+                    setFormData(prev => ({ ...prev, q7_revision_goal_other: e.target.value }));
+                    if (errors.q7_revision_goal_other) setErrors(prev => ({ ...prev, q7_revision_goal_other: '' }));
+                  }}
+                  className="w-full p-3 bg-white border border-border-beige text-dark-brown font-serif-body focus:outline-none focus:ring-2 focus:ring-warm-gold resize-none"
+                  rows="2"
+                  placeholder="请描述……"
+                />
+                {errors.q7_revision_goal_other && (
+                  <p className="text-burnt-red text-sm mt-2">{errors.q7_revision_goal_other}</p>
+                )}
+              </div>
             )}
           </div>
 

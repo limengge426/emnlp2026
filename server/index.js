@@ -270,6 +270,7 @@ app.post('/api/submit/questionnaire', (req, res) => {
       q6_restricted,
       q6_restriction_source,
       q7_revision_goal,
+      q7_revision_goal_other,
       q7b_motivation_accuracy,
       q7c_motivation_stigma,
       q7d_motivation_aesthetic,
@@ -297,6 +298,10 @@ app.post('/api/submit/questionnaire', (req, res) => {
     if (isCtrl && (!q5_prompt_interpretation || q5_prompt_interpretation.trim().length < 10)) missing.push('q5_prompt_interpretation');
     if (!q6_restricted) missing.push('q6_restricted');
     if (!q7_revision_goal) missing.push('q7_revision_goal');
+    // 选了"其他"必须填写具体内容
+    if (q7_revision_goal === '其他' && (!q7_revision_goal_other || q7_revision_goal_other.trim().length === 0)) {
+      missing.push('q7_revision_goal_other');
+    }
 
     // 机制分离题：仅实验组必填，1-7
     if (isExp && !inLikertRange(q7b_motivation_accuracy)) missing.push('q7b_motivation_accuracy');
@@ -335,6 +340,7 @@ app.post('/api/submit/questionnaire', (req, res) => {
           q6_restricted = ?,
           q6_restriction_source = ?,
           q7_revision_goal = ?,
+          q7_revision_goal_other = ?,
           q7b_motivation_accuracy = ?,
           q7c_motivation_stigma = ?,
           q7d_motivation_aesthetic = ?,
@@ -360,6 +366,7 @@ app.post('/api/submit/questionnaire', (req, res) => {
       q6_restricted,
       isCtrl ? (q6_restriction_source || null) : null,
       q7_revision_goal,
+      q7_revision_goal === '其他' ? q7_revision_goal_other : null,
       isExp ? q7b_motivation_accuracy : null,
       isExp ? q7c_motivation_stigma : null,
       isExp ? q7d_motivation_aesthetic : null,
@@ -444,6 +451,7 @@ app.get('/api/admin/export', (req, res) => {
       'q6_restricted',
       'q6_restriction_source',
       'q7_revision_goal',
+      'q7_revision_goal_other',
       'q7b_motivation_accuracy',
       'q7c_motivation_stigma',
       'q7d_motivation_aesthetic',
@@ -491,6 +499,7 @@ app.get('/api/admin/export', (req, res) => {
       row.q6_restricted || '',
       `"${(row.q6_restriction_source || '').replace(/"/g, '""')}"`,
       row.q7_revision_goal || '',
+      `"${(row.q7_revision_goal_other || '').replace(/"/g, '""')}"`,
       row.q7b_motivation_accuracy || '',
       row.q7c_motivation_stigma || '',
       row.q7d_motivation_aesthetic || '',

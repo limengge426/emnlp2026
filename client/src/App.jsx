@@ -96,7 +96,7 @@ export default function App() {
           />
         );
       case 'DETECTING_1':
-        return <Detecting1Page onComplete={handleDetecting1Complete} />;
+        return <Detecting1Page group={group} onComplete={handleDetecting1Complete} />;
       case 'RESULT_1':
         return (
           <Result1Page
@@ -115,7 +115,7 @@ export default function App() {
           />
         );
       case 'DETECTING_2':
-        return <Detecting2Page onComplete={handleDetecting2Complete} />;
+        return <Detecting2Page group={group} onComplete={handleDetecting2Complete} />;
       case 'RESULT_2':
         return (
           <Result2Page

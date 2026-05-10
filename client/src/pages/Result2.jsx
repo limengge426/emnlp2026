@@ -35,7 +35,7 @@ export default function Result2Page({ group, fakeAIScore2, onContinue }) {
         ) : (
           <div className="max-w-xl mx-auto bg-white p-8 border border-border-beige text-center mb-8">
             <p className="text-lg text-dark-brown font-serif-body leading-relaxed">
-              感谢您完成两次写作，您的认真态度对本研究非常重要！
+              感谢您完成两次写作。最后还有一份简短问卷需要您填写，完成后本研究即告结束。
             </p>
           </div>
         )}

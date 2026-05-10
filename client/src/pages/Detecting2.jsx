@@ -1,13 +1,14 @@
 import React, { useEffect, useState } from 'react';
 
-export default function Detecting2Page({ onComplete }) {
+export default function Detecting2Page({ group, onComplete }) {
   const [messages, setMessages] = useState([]);
 
   useEffect(() => {
+    const isExperimental = group === 'experimental';
     const timings = [
       { delay: 500, message: '正在分析文本结构……' },
       { delay: 5000, message: '正在比对语料特征……' },
-      { delay: 10000, message: '正在生成报告……' },
+      { delay: 10000, message: isExperimental ? '正在生成报告……' : '正在准备反馈……' },
     ];
 
     const timeouts = timings.map(({ delay, message }) =>

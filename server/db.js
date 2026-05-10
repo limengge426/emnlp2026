@@ -50,6 +50,7 @@ const SCHEMA_COLUMNS = [
   ['q4_deleted_types', 'TEXT'],
   ['q6_restricted', 'INTEGER'],
   ['q7_revision_goal', 'TEXT'],
+  ['q7_revision_goal_other', 'TEXT'],   // 当 q7_revision_goal = "其他" 时被试填写的具体内容
   ['q8_daily_concern', 'INTEGER'],
   ['q9_authentic_draft', 'TEXT'],
   ['q10_perceived_purpose', 'TEXT'],
