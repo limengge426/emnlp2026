@@ -83,6 +83,7 @@ export default function App() {
         return (
           <PreSurveyPage
             participantId={participantId}
+            group={group}
             onSubmit={handlePreSurveySubmit}
           />
         );

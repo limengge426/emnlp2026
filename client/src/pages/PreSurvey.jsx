@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 
-export default function PreSurveyPage({ participantId, onSubmit }) {
+export default function PreSurveyPage({ participantId, group, onSubmit }) {
+  const isExperimental = group === 'experimental';
+
   const [formData, setFormData] = useState({
     pre_age: '',
     pre_gender: '',
@@ -78,13 +80,17 @@ export default function PreSurveyPage({ participantId, onSubmit }) {
 
     setSubmitting(true);
     try {
+      // 对照组不展示 AI 率预测题，提交时把该字段置 null，避免发送默认滑块值 50
+      const payload = {
+        participantId,
+        ...formData,
+        pre_predicted_ai_score: isExperimental ? formData.pre_predicted_ai_score : null
+      };
+
       const response = await fetch('/api/submit/presurvey', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          participantId,
-          ...formData
-        })
+        body: JSON.stringify(payload)
       });
 
       if (!response.ok) {
@@ -357,29 +363,31 @@ export default function PreSurveyPage({ participantId, onSubmit }) {
             )}
           </div>
 
-          {/* 题目10：预期AI检测概率 - 滑块 */}
-          <div className="mb-8 p-6 bg-warm-gray border border-border-beige">
-            <label className="block text-lg font-serif-title text-dark-brown mb-4">
-              您预期自己接下来写的散文，被 AI 检测器判定为 AI 生成的概率大约是多少？
-            </label>
-            <div className="space-y-4">
-              <input
-                type="range"
-                min="0"
-                max="100"
-                value={formData.pre_predicted_ai_score}
-                onChange={(e) => {
-                  setFormData(prev => ({ ...prev, pre_predicted_ai_score: parseInt(e.target.value) }));
-                }}
-                className="w-full"
-              />
-              <div className="text-center">
-                <span className="text-2xl font-serif-title text-dark-brown">
-                  {formData.pre_predicted_ai_score}%
-                </span>
+          {/* 题目10：预期AI检测概率 - 滑块（仅实验组展示） */}
+          {isExperimental && (
+            <div className="mb-8 p-6 bg-warm-gray border border-border-beige">
+              <label className="block text-lg font-serif-title text-dark-brown mb-4">
+                您预期自己接下来写的散文，被 AI 检测器判定为 AI 生成的概率大约是多少？
+              </label>
+              <div className="space-y-4">
+                <input
+                  type="range"
+                  min="0"
+                  max="100"
+                  value={formData.pre_predicted_ai_score}
+                  onChange={(e) => {
+                    setFormData(prev => ({ ...prev, pre_predicted_ai_score: parseInt(e.target.value) }));
+                  }}
+                  className="w-full"
+                />
+                <div className="text-center">
+                  <span className="text-2xl font-serif-title text-dark-brown">
+                    {formData.pre_predicted_ai_score}%
+                  </span>
+                </div>
               </div>
             </div>
-          </div>
+          )}
 
           {errors.submit && (
             <div className="mb-6 p-4 bg-burnt-red bg-opacity-10 border border-burnt-red text-burnt-red text-sm">
