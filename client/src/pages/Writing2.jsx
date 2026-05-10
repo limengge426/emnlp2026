@@ -80,7 +80,7 @@ export default function Writing2Page({ initialText, onSubmit }) {
 
           <div className="mt-6 flex justify-between items-center">
             <div className="text-med-brown text-sm font-serif-body">
-              字数统计：<span className="font-semibold text-dark-brown">{wordCount}</span> / 400-500
+              字数统计：<span className="font-semibold text-dark-brown">{wordCount}</span> / 不少于 400 字
               {wordCount < 400 && (
                 <div className="text-burnt-red text-xs mt-1">
                   还需要 {400 - wordCount} 个字
