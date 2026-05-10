@@ -44,7 +44,7 @@ export default function ConsentPage({ onSubmit }) {
 
         <div className="max-w-xl mx-auto bg-warm-gray p-8 border border-border-beige">
           <p className="text-lg leading-relaxed mb-6 text-dark-brown font-serif-body">
-            您好，感谢参与本次研究。本研究关注创意写作过程中的修改行为。您将完成一篇短篇小说的写作，并有机会在反馈后进行修改。您的写作内容将用于学术研究，数据匿名处理。实验共约 20-30 分钟。
+            您好，感谢参与本次研究。本研究关注创意写作过程中的修改行为。您将完成一篇短篇小说的写作，并有机会在反馈后进行修改。您的写作内容将用于学术研究，数据匿名处理。实验共约一小时。
           </p>
 
           <form onSubmit={handleSubmit}>
