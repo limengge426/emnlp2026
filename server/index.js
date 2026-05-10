@@ -79,6 +79,10 @@ app.post('/api/submit/presurvey', (req, res) => {
 
     const db = getDB();
 
+    // 从 participants.json 读出组别，写入 DB 的 group_name 字段，保证 CSV 导出自带组别
+    const participantsCfg = loadParticipants();
+    const group = participantsCfg[participantId] || null;
+
     // 检查被试是否存在
     const stmt = db.prepare('SELECT id FROM participants WHERE id = ?');
     const existing = stmt.get(participantId);
@@ -87,7 +91,8 @@ app.post('/api/submit/presurvey', (req, res) => {
       // 更新
       const updateStmt = db.prepare(`
         UPDATE participants
-        SET pre_age = ?,
+        SET group_name = ?,
+            pre_age = ?,
             pre_gender = ?,
             pre_native_chinese = ?,
             pre_writing_frequency = ?,
@@ -100,6 +105,7 @@ app.post('/api/submit/presurvey', (req, res) => {
         WHERE id = ?
       `);
       updateStmt.run(
+        group,
         pre_age,
         pre_gender,
         pre_native_chinese,
@@ -116,11 +122,12 @@ app.post('/api/submit/presurvey', (req, res) => {
       // 创建新记录
       const insertStmt = db.prepare(`
         INSERT INTO participants
-        (id, pre_age, pre_gender, pre_native_chinese, pre_writing_frequency, pre_writing_focus, pre_ai_tool_usage, pre_reader_concern, pre_misjudgment_distress, pre_detector_familiarity, pre_predicted_ai_score)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        (id, group_name, pre_age, pre_gender, pre_native_chinese, pre_writing_frequency, pre_writing_focus, pre_ai_tool_usage, pre_reader_concern, pre_misjudgment_distress, pre_detector_familiarity, pre_predicted_ai_score)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `);
       insertStmt.run(
         participantId,
+        group,
         pre_age,
         pre_gender,
         pre_native_chinese,
