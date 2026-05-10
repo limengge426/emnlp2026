@@ -485,7 +485,7 @@ app.get('/api/admin/export', (req, res) => {
       `"${(row.q1_changes || '').replace(/"/g, '""')}"`,
       `"${(row.q2_abandoned || '').replace(/"/g, '""')}"`,
       `"${(row.q3_ai_markers || '').replace(/"/g, '""')}"`,
-      row.q4_deleted_types || '',
+      `"${(row.q4_deleted_types || '').replace(/"/g, '""')}"`,
       row.q5_detection_reaction || '',
       `"${(row.q5_prompt_interpretation || '').replace(/"/g, '""')}"`,
       row.q6_restricted || '',
