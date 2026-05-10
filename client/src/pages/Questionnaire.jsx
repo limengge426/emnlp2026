@@ -80,8 +80,8 @@ export default function QuestionnairePage({
     if (!formData.q10_perceived_purpose.trim() || formData.q10_perceived_purpose.trim().length < 10) {
       newErrors.q10_perceived_purpose = '请至少输入 10 个字';
     }
-    if (!formData.q10b_oddness.trim() || formData.q10b_oddness.trim().length < 10) {
-      newErrors.q10b_oddness = '请至少输入 10 个字';
+    if (!formData.q10b_oddness.trim()) {
+      newErrors.q10b_oddness = '请填写此项';
     }
     if (isExperimental) {
       if (formData.q10c_score_doubt === 0) {
@@ -543,7 +543,7 @@ export default function QuestionnairePage({
           {/* Q10b: 实验体验中的"不对劲"（两组共用，开放） */}
           <div className="mb-8 p-6 bg-warm-gray border border-border-beige">
             <label className="block text-lg font-serif-title text-dark-brown mb-3">
-              10.1 在整个实验过程中，您有没有觉得哪里让您困惑、不自然，或者"不太对劲"？如果有，是什么？<span className="text-med-brown text-sm">（至少 10 字。如果没有，请直接写"没有觉得哪里不对劲"）</span>
+              10.1 在整个实验过程中，您有没有觉得哪里让您困惑、不自然，或者"不太对劲"？如果有，是什么？<span className="text-med-brown text-sm">（如果没有，可以直接写"没有"）</span>
             </label>
             <textarea
               value={formData.q10b_oddness}

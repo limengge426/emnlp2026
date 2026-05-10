@@ -302,7 +302,7 @@ app.post('/api/submit/questionnaire', (req, res) => {
     if (!q10_perceived_purpose || q10_perceived_purpose.trim().length < 10) missing.push('q10_perceived_purpose');
 
     // funneled debriefing
-    if (!q10b_oddness || q10b_oddness.trim().length < 10) missing.push('q10b_oddness');
+    if (!q10b_oddness || q10b_oddness.trim().length === 0) missing.push('q10b_oddness');
     if (isExp && !inLikertRange(q10c_score_doubt)) missing.push('q10c_score_doubt');
     // q10d 仅在实验组且 q10c >= 4 时必填
     if (isExp && inLikertRange(q10c_score_doubt) && q10c_score_doubt >= 4) {
