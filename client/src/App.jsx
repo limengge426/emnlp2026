@@ -138,7 +138,7 @@ export default function App() {
           />
         );
       case 'DONE':
-        return <DonePage />;
+        return <DonePage group={group} />;
       default:
         return <ConsentPage onSubmit={handleConsentSubmit} />;
     }
